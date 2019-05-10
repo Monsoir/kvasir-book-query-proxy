@@ -12,7 +12,7 @@ export class DiagnosticController {
   @Get('ping')
   pong(@Query('msg') message: string) {
     if (this.validator.isEmpty(message || '')) {
-      return new Response(true, 'pong');
+      return new Response(true, 'pongong');
     }
     return new Response(true, `pong: ${message}`);
   }
