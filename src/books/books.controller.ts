@@ -1,8 +1,7 @@
-import { Controller, Get, Query, UseInterceptors, ClassSerializerInterceptor, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Query, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { QueriedBookResDto, QueriedCachedBookListDto, QueriedBook } from './miscellaneous/dtos';
 import { BooksService } from './books.service';
 import { plainToClass } from 'class-transformer';
-import validator from 'validator';
 
 @Controller('books')
 export class BooksController {
