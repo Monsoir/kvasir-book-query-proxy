@@ -26,4 +26,6 @@ export class QueriedBookResDto extends Response<IBook> {
 
 export class QueriedCachedBookListDto extends Response<IBook> {
   isCached: boolean = false;
+  pageIndex: number;
+  total: number;
 }

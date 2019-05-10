@@ -24,13 +24,15 @@ export class BooksController {
   }
 
   @Get('query/cached')
-  async queryAllCache() {
-    const result = await this.booksService.findAll();
+  async queryCached(@Query('p') page: number) {
+    const result = await this.booksService.findCacheds(page || 1);
     if (result.success) {
       const response = new QueriedCachedBookListDto(true, '', plainToClass(QueriedBook, result.books.map(ele => ele.toObject()), {
         excludePrefixes: ['_'],
       }));
       response.isCached = true;
+      response.pageIndex = result.pageIndex;
+      response.total = result.total;
       return response;
     }
     return new QueriedCachedBookListDto(false, `查询失败：${result.messages || ''}`, []);
