@@ -15,7 +15,11 @@ interface IQuerySetResult {
   success: boolean;
   books: Book[];
   messages?: string;
+  total: number;
+  pageIndex: number;
 }
+
+const PAGE_SIZE = 10;
 
 @Injectable()
 export class BooksService {
@@ -51,18 +55,27 @@ export class BooksService {
     return { success: false, book: null, cached: false, messages: remoteQueryResult.messages };
   }
 
-  findAll = async (): Promise<IQuerySetResult> => {
+  findCacheds = async (page: number): Promise<IQuerySetResult> => {
+    if (!this.validator.isInt(page.toString()) || page <= 0) {
+      throw new BadRequestException('页码参数错误');
+    }
+
     try {
-      const books = await this.bookModel.find().exec();
+      const books = await this.bookModel.find().skip(PAGE_SIZE * (page - 1)).limit(PAGE_SIZE).exec();
+      const total = await this.bookModel.find().estimatedDocumentCount();
       return {
         success: true,
         books,
+        pageIndex: page,
+        total,
       };
     } catch (e) {
       return {
         success: false,
         books: [],
         messages: e.message,
+        pageIndex: page,
+        total: 0,
       };
     }
   }
