@@ -24,6 +24,11 @@ export interface IBook {
   imagesLarge: string;
 }
 
+export interface ICachedBook extends IBook {
+  visited: number;
+  proxied: number;
+}
+
 export interface Book extends Document {
   readonly isbn: string; // 13 位 ISBN
   readonly isbn10: string; // 10 位 ISBN

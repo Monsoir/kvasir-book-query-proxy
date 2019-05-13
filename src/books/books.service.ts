@@ -1,9 +1,12 @@
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { Book, IBook } from './interfaces/book.interface';
+import { Book, IBook, ICachedBook } from './interfaces/book.interface';
 import { BookModelToken } from './schemas/book.schema';
 import { BookQueryProxySource, ProviderToken } from '$src/miscellaneous/constants';
 import { Proxy } from '$src/proxy/proxy.provider';
+import { CacheService } from '$src/cache/cache.service';
+import { plainToClass } from 'class-transformer';
+import { QueriedCacheBook } from './miscellaneous/dtos';
 
 interface IQueryResult {
   success: boolean;
@@ -13,13 +16,15 @@ interface IQueryResult {
 
 interface IQuerySetResult {
   success: boolean;
-  books: Book[];
+  books: ICachedBook[];
   messages?: string;
   total: number;
   pageIndex: number;
 }
 
 const PAGE_SIZE = 10;
+const createVisitedCacheKey = (key: string) => `visited-${key}`;
+const createProxiedCacheKey = (key: string) => `proxied-${key}`;
 
 @Injectable()
 export class BooksService {
@@ -32,6 +37,9 @@ export class BooksService {
 
     @Inject(Proxy)
     private readonly proxy: Proxy,
+
+    @Inject(CacheService)
+    private readonly redisCache: CacheService,
   ) {}
 
   queryByISBN = async (isbn: string): Promise<{ success: boolean, book: Book, cached: boolean, messages?: string }> => {
@@ -43,12 +51,14 @@ export class BooksService {
     // 先查找本地
     const localQueryResult = await this.queryLocal(isbn);
     if (localQueryResult.success && localQueryResult.book) {
+      await this.recordOperatedTimes(isbn);
       return { success: true, book: localQueryResult.book, cached: true };
     }
 
     // 本地没有，调用 API
     const remoteQueryResult = await this.queryRemote(isbn);
     if (remoteQueryResult.success) {
+      await this.recordOperatedTimes(isbn, true);
       return { success: true, book: remoteQueryResult.book, cached: false };
     }
 
@@ -61,8 +71,20 @@ export class BooksService {
     }
 
     try {
-      const books = await this.bookModel.find().skip(PAGE_SIZE * (page - 1)).limit(PAGE_SIZE).exec();
+      // TODO: 根据创建时间进行分页
+      const rawBooks = await this.bookModel.find().skip(PAGE_SIZE * (page - 1)).limit(PAGE_SIZE).exec();
       const total = await this.bookModel.find().estimatedDocumentCount();
+
+      const books = plainToClass(QueriedCacheBook, rawBooks.map(ele => ele.toObject()), {
+        excludePrefixes: ['_'],
+      });
+
+      const times = await this.batchReadOperatedTimes(books.map(ele => ele.isbn));
+      books.forEach((ele, index) => {
+        ele.visited = times[index].visited;
+        ele.proxied = times[index].proxied;
+      });
+
       return {
         success: true,
         books,
@@ -121,6 +143,62 @@ export class BooksService {
       return { success: false, book: null };
     } catch (e) {
       return { success: false, book: null, messages: e.message || '' };
+    }
+  }
+
+  /**
+   * 记录某个书籍的相关的访问次数
+   */
+  private recordOperatedTimes = async (isbn: string, didProxy: boolean = false) => {
+    const keys = [createVisitedCacheKey(isbn)];
+
+    if (didProxy) {
+      keys.push(createProxiedCacheKey(isbn));
+    }
+
+    try {
+      await this.redisCache.multiIncr(...keys);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  private readOperatedTimes = async (isbn: string): Promise<{visited: number, proxied: number}> => {
+    const visitedKey = createVisitedCacheKey(isbn);
+    const proxiedKey = createProxiedCacheKey(isbn);
+
+    const [ visitedTimes, proxiedTimes, _ ] = await this.redisCache.mget(visitedKey, proxiedKey);
+    return {
+      visited: parseInt(visitedTimes, 10) || 0,
+      proxied: parseInt(proxiedTimes, 10) || 0,
+    };
+  }
+
+  private batchReadOperatedTimes = async (isbns: string[]): Promise<Array<{visited: number, proxied: number}> | null> => {
+    const visitedKeys = [];
+    const proxiedKeys = [];
+    isbns.forEach(ele => {
+      visitedKeys.push(createVisitedCacheKey(ele));
+      proxiedKeys.push(createProxiedCacheKey(ele));
+    });
+
+    try {
+      const times = await this.redisCache.mget(...visitedKeys, ...proxiedKeys);
+
+      const pivot = times.length / 2;
+      // const visitedTimes = times.slice(0, pivot);
+      // const proxiedTimes = times.slice(pivot, times.length);
+
+      const results = [];
+      for (let i = 0; i < pivot; i++) {
+        results.push({
+          visited: parseInt(times[i], 10) || 0,
+          proxied: parseInt(times[i + pivot], 10) || 0,
+        });
+      }
+      return results;
+    } catch {
+      return null;
     }
   }
 }

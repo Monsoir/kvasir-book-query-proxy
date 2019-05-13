@@ -27,9 +27,7 @@ export class BooksController {
   async queryCached(@Query('p') page: number) {
     const result = await this.booksService.findCacheds(page || 1);
     if (result.success) {
-      const response = new QueriedCachedBookListDto(true, '', plainToClass(QueriedBook, result.books.map(ele => ele.toObject()), {
-        excludePrefixes: ['_'],
-      }));
+      const response = new QueriedCachedBookListDto(true, '', plainToClass(QueriedBook, result.books));
       response.isCached = true;
       response.pageIndex = result.pageIndex;
       response.total = result.total;
