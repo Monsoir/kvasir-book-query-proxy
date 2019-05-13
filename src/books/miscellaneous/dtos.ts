@@ -1,5 +1,5 @@
 import { Response } from '$src/miscellaneous/formats/response.format';
-import { IBook } from '../interfaces/book.interface';
+import { IBook, ICachedBook } from '../interfaces/book.interface';
 
 export class QueriedBook implements IBook {
   isbn: string;
@@ -18,6 +18,11 @@ export class QueriedBook implements IBook {
   summary: string;
   imagesMedium: string;
   imagesLarge: string;
+}
+
+export class QueriedCacheBook extends QueriedBook implements ICachedBook {
+  visited: number;
+  proxied: number;
 }
 
 export class QueriedBookResDto extends Response<IBook> {

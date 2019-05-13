@@ -32,8 +32,14 @@ export class ConfigService {
       MONGO_HOST: joi.string().ip().required(),
       MONGO_USER: joi.string().required(),
       MONGO_PASSWORD: joi.string().required(),
-      MONGO_PORT: joi.number().required(),
+      MONGO_PORT: joi.number().port().required(),
       MONGO_NAME: joi.string().required(),
+
+      // Redis
+      REDIS_HOST: joi.string().ip().required(),
+      REDIS_PORT: joi.number().required(),
+      REDIS_PASSWORD: joi.string().required(),
+      REDIS_TOKEN_TTL: joi.number().required(),
 
       // ALIYUN
       ALIYUN_APPCODE: joi.string().required(),
