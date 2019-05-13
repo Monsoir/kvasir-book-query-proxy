@@ -19,6 +19,9 @@ export class DiagnosticController {
     }
   }
 
+  /**
+   * 检查 Redis 是否正常连接
+   */
   private async pingRedis(message: string): Promise<string> {
     return this.redisCache.ping(message);
   }
