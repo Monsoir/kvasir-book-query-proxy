@@ -1,28 +1,25 @@
 import { Controller, Get, Query, Inject } from '@nestjs/common';
-import { ProviderToken } from '$src/miscellaneous/constants';
 import { Response } from '$src/miscellaneous/formats/response.format';
 import { CacheService } from '$src/cache/cache.service';
 
 @Controller('diagnostic')
 export class DiagnosticController {
   constructor(
-    @Inject(ProviderToken.validation)
-    private readonly validator: ValidatorJS.ValidatorStatic,
-
     private readonly redisCache: CacheService,
   ) {}
 
   @Get('ping')
-  pong(@Query('msg') message: string) {
-    if (this.validator.isEmpty(message || '')) {
-      return new Response(true, 'pong');
+  async ping(@Query('msg') message: string, @Query('service') service: string) {
+    switch (service) {
+      case 'redis':
+        const result = await this.pingRedis(message || '');
+        return new Response(true, `response from ${service}: ${result}`);
+      default:
+        return new Response(true, `pong: ${message}`);
     }
-    return new Response(true, `pong: ${message}`);
   }
 
-  @Get('ping-redis')
-  async pongRedis(@Query('msg') message: string) {
-    const result = await this.redisCache.ping(message);
-    return new Response(true, result);
+  private async pingRedis(message: string): Promise<string> {
+    return this.redisCache.ping(message);
   }
 }
