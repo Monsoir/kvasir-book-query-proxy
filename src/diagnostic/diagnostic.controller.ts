@@ -1,6 +1,7 @@
-import { Controller, Get, Query, Inject } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { Response } from '$src/miscellaneous/formats/response.format';
 import { CacheService } from '$src/cache/cache.service';
+import { AuthGuard } from '$src/miscellaneous/guards/auth.guard';
 
 @Controller('diagnostic')
 export class DiagnosticController {
@@ -8,6 +9,7 @@ export class DiagnosticController {
     private readonly redisCache: CacheService,
   ) {}
 
+  @UseGuards(AuthGuard)
   @Get('ping')
   async ping(@Query('msg') message: string, @Query('service') service: string) {
     switch (service) {

@@ -43,6 +43,8 @@ export class ConfigService {
 
       // ALIYUN
       ALIYUN_APPCODE: joi.string().required(),
+
+      APP_SECRET: joi.string().required(),
     });
     const { error, value } = joi.validate(
       envConfig,

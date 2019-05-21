@@ -1,7 +1,8 @@
-import { Controller, Get, Query, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { Controller, Get, Query, UseInterceptors, ClassSerializerInterceptor, UseGuards } from '@nestjs/common';
 import { QueriedBookResDto, QueriedCachedBookListDto, QueriedBook } from './miscellaneous/dtos';
 import { BooksService } from './books.service';
 import { plainToClass } from 'class-transformer';
+import { AuthGuard } from '$src/miscellaneous/guards/auth.guard';
 
 @Controller('books')
 export class BooksController {
@@ -9,6 +10,7 @@ export class BooksController {
     private readonly booksService: BooksService,
   ) {}
 
+  @UseGuards(AuthGuard)
   @Get('query')
   @UseInterceptors(ClassSerializerInterceptor)
   async readABookBy(@Query('isbn') isbn: string) {
