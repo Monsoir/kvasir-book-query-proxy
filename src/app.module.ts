@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from './config/config.module';
 import { BooksModule } from './books/books.module';
 import { DiagnosticModule } from './diagnostic/diagnostic.module';
+import { OcrModule } from './ocr/ocr.module';
 
 // const CreateTypeOrmConfig = async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
 //   const connectionOptions = await getConnectionOptions();
@@ -25,6 +26,7 @@ import { DiagnosticModule } from './diagnostic/diagnostic.module';
     ConfigModule,
     BooksModule,
     DiagnosticModule,
+    OcrModule,
   ],
   controllers: [AppController],
   providers: [AppService],

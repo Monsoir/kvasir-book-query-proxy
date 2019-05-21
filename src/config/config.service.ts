@@ -27,6 +27,7 @@ export class ConfigService {
         .valid(['development', 'production', 'test'])
         .default('development'),
       PORT: joi.number().default(3000),
+      APP_SECRET: joi.string().required(),
 
       // Mongodb
       MONGO_HOST: joi.string().ip().required(),
@@ -44,7 +45,9 @@ export class ConfigService {
       // ALIYUN
       ALIYUN_APPCODE: joi.string().required(),
 
-      APP_SECRET: joi.string().required(),
+      // Tencent Cloud
+      TENCENT_SECRET_ID: joi.string().required(),
+      TENCENT_SECRET_KEY: joi.string().required(),
     });
     const { error, value } = joi.validate(
       envConfig,
