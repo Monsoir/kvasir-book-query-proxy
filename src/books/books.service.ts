@@ -150,10 +150,10 @@ export class BooksService {
    * 记录某个书籍的相关的访问次数
    */
   private recordOperatedTimes = async (isbn: string, didProxy: boolean = false) => {
-    const keys = [createVisitedCacheKey(isbn)];
+    const keys = [createVisitedCacheKey(isbn)]; // 书籍访问次数
 
     if (didProxy) {
-      keys.push(createProxiedCacheKey(isbn));
+      keys.push(createProxiedCacheKey(isbn)); // 书籍代理次数
     }
 
     try {

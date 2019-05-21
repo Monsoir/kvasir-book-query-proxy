@@ -38,6 +38,8 @@ export class OcrController {
 
     const image = files.image[0];
     const result = await this.ocrService.proxyOCR(image);
-    return new Response(true, '', result);
+    return new Response(true, '', {
+      texts: result,
+    });
   }
 }

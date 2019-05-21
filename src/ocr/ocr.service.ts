@@ -1,6 +1,7 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Inject } from '@nestjs/common';
 import * as TencentCloud from 'tencentcloud-sdk-nodejs';
 import { ConfigService } from '$src/config/config.service';
+import { CacheService } from '$src/cache/cache.service';
 
 const OCRClient = TencentCloud.ocr.v20181119.Client;
 const models = TencentCloud.ocr.v20181119.Models;
@@ -11,31 +12,43 @@ const HttpProfile = TencentCloud.common.HttpProfile;
 
 const OCREndPoint = 'ocr.tencentcloudapi.com';
 
-interface IOCRRecogizeSuccess {
-  texts: string[];
-}
+const OCRedCacheKey = 'ocred';
 
 @Injectable()
 export class OcrService {
   constructor(
     private readonly configService: ConfigService,
+
+    @Inject(CacheService)
+    private readonly redisCache: CacheService,
   ) {}
 
-  proxyOCR = async (image: any): Promise<IOCRRecogizeSuccess> => {
+  proxyOCR = async (image: any): Promise<string[]> => {
+    // 将图片转为 Base64 字符串
     const imageStringify = this.convertImageToBase64(image);
+
+    // 调用 API 识别
+    let texts: string[] = [];
     try {
-      const texts = await this.promisifyOCRRecognize(imageStringify);
-      return texts;
+      texts = await this.promisifyOCRRecognize(imageStringify);
     } catch (e) {
       throw new InternalServerErrorException(e.message);
     }
+
+    // Redis 记录调用次数
+    try {
+      await this.redisCache.incr(OCRedCacheKey);
+    } catch (e) {
+      console.log(e);
+    }
+    return texts || [];
   }
 
   private convertImageToBase64 = (imageData: any) => {
     return imageData.buffer.toString('base64');
   }
 
-  private promisifyOCRRecognize = (base64fyImage: string): Promise<IOCRRecogizeSuccess> => {
+  private promisifyOCRRecognize = (base64fyImage: string): Promise<string[]> => {
     const cred = new Credential(
       this.configService.get('TENCENT_SECRET_ID'),
       this.configService.get('TENCENT_SECRET_KEY'),
@@ -67,9 +80,7 @@ export class OcrService {
         const texts = (recognizeResults.TextDetections || []).map(ele => {
           return ele.DetectedText || '';
         });
-        resolve({
-          texts,
-        });
+        resolve(texts);
     });
     });
   }

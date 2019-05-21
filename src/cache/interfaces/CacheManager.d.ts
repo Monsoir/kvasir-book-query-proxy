@@ -8,6 +8,7 @@ export default interface ICacheManager {
   multi(): any;
   multi(arg: any[]): any;
   ping(message: string): string;
+  incr(key: string): number;
 
   sadd(key: string, member: any, callback: Function): any;
   srem(key: string, member: any, callback: Function): any;

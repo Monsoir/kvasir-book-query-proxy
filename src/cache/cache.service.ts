@@ -11,6 +11,7 @@ export class CacheService {
   private msetAsync: (...args: any[]) => Promise<string>;
   private delAsync: (...args: string[]) => Promise<number>;
   private pingAsync: (message: string) => Promise<string>;
+  private incrAsync: (key: string) => Promise<number>;
 
   constructor(@Inject(CACHE_MANAGER) cache: ICacheManager) {
     this.cache = cache.store.getClient();
@@ -26,6 +27,8 @@ export class CacheService {
 
     this.delAsync = promisify(this.cache.del).bind(this.cache);
     this.pingAsync = promisify(this.cache.ping).bind(this.cache);
+
+    this.incrAsync = promisify(this.cache.incr).bind(this.cache);
   }
 
   public async get(key: string): Promise<any> {
@@ -64,5 +67,9 @@ export class CacheService {
         }
       });
     });
+  }
+
+  public async incr(key: string): Promise<number> {
+    return this.incrAsync(key);
   }
 }
