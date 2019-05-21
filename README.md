@@ -54,11 +54,32 @@ appSecret 需要在服务端自行设置，这个 appSecrect 与第三方的服�
 
 > 若使用 Postman 进行调试，可以查看 [Dynamic set authorization to header in Postman](https://gist.github.com/Monsoir/d6d6eb324b2ca9ac1f46a5e760e4d03d) 这个代码片段，设置 Postman 每次发起请求时自动计算并设置头部信息
 
+## 服务启动
+
+开发 👇
+
+```
+npm run start:dev
+```
+
+调试 👇
+
+```
+npm run start:debug
+```
+
+生产 👇
+
+```
+npm run start:prod
+```
+
 ## 技术栈
 
 - nest(Node.js)
 - MongoDB
 - Redis
+- pm2
 
 
 
