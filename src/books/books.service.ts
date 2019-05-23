@@ -3,7 +3,7 @@ import { Model } from 'mongoose';
 import { Book, IBook, ICachedBook } from './interfaces/book.interface';
 import { BookModelToken } from './schemas/book.schema';
 import { BookQueryProxySource, ProviderToken } from '$src/miscellaneous/constants';
-import { Proxy } from '$src/proxy/proxy.provider';
+import { BookProxy } from '$src/proxy/book/book.proxy.provider';
 import { CacheService } from '$src/cache/cache.service';
 import { plainToClass } from 'class-transformer';
 import { QueriedCacheBook } from './miscellaneous/dtos';
@@ -35,8 +35,8 @@ export class BooksService {
     @Inject(ProviderToken.validation)
     private readonly validator: ValidatorJS.ValidatorStatic,
 
-    @Inject(Proxy)
-    private readonly proxy: Proxy,
+    @Inject(BookProxy)
+    private readonly proxy: BookProxy,
 
     @Inject(CacheService)
     private readonly redisCache: CacheService,

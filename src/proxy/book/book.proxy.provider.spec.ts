@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Proxy } from './proxy.provider';
+import { BookProxy } from './book.proxy.provider';
 
-describe('Proxy', () => {
-  let provider: Proxy;
+describe('BookProxy', () => {
+  let provider: BookProxy;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [Proxy],
     }).compile();
 
-    provider = module.get<Proxy>(Proxy);
+    provider = module.get<BookProxy>(Proxy);
   });
 
   it('should be defined', () => {

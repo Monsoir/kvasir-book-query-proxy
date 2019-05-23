@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, UseInterceptors, FileFieldsInterceptor, BadRequestException, UploadedFiles } from '@nestjs/common';
+import { Controller, UseGuards, Post, UseInterceptors, FileFieldsInterceptor, BadRequestException, UploadedFiles, Req } from '@nestjs/common';
 import { OcrService } from './ocr.service';
 import { AuthGuard } from '$src/miscellaneous/guards/auth.guard';
 import { Response } from '$src/miscellaneous/formats/response.format';
@@ -31,13 +31,19 @@ export class OcrController {
     ),
   )
   @Post('/')
-  async recoginize(@UploadedFiles() files) {
-    if (!files || !files.image || !files.image[0]) {
+  async recoginize(@UploadedFiles() files, @Req() request) {
+    let image = null;
+    if (files && files.image && files.image[0]) {
+      // for content-type is `www-form-urlencoded`
+      // image = files.image[0];
+      image = files.image[0].buffer;
+    }
+
+    if (image === null || image === undefined) {
       throw new BadRequestException('上传文件不存在');
     }
 
-    const image = files.image[0];
-    const result = await this.ocrService.proxyOCR(image);
+    const result = await this.ocrService.ocrRegconize(image);
     return new Response(true, '', {
       texts: result,
     });

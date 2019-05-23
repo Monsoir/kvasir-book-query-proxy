@@ -1,7 +1,7 @@
 import * as axios from 'axios';
 import { IBook } from '$src/books/interfaces/book.interface';
 import { QueriedBookKeyMap } from '../constants';
-import { IBookProxiable } from '$src/proxy/proxy.provider';
+import { IBookProxiable } from '$src/proxy/book/book.proxy.provider';
 
 const AliyunAddress = 'https://isbn.market.alicloudapi.com/ISBN';
 

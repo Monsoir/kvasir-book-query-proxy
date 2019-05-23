@@ -10,7 +10,7 @@ export interface IBookProxiable {
 }
 
 @Injectable()
-export class Proxy {
+export class BookProxy {
   constructor(
     private readonly configService: ConfigService,
   ) {}

@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { Proxy } from './proxy.provider';
+import { BookProxy } from './book/book.proxy.provider';
+import { OcrProxy } from './ocr/ocr.proxy.provider';
 
 @Module({
-  providers: [Proxy],
-  exports: [Proxy],
+  providers: [BookProxy, OcrProxy],
+  exports: [BookProxy, OcrProxy],
 })
 export class ProxyModule {}
